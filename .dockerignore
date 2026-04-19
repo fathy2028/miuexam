@@ -1,4 +1,5 @@
-# Root-level .dockerignore (applies to the backend build context == project root)
+# Root-level .dockerignore (backend context is now ./backend, so these entries
+# only matter if you run `docker build .` from the project root manually).
 __pycache__
 *.pyc
 *.pyo
@@ -11,13 +12,10 @@ venv
 .vscode
 .idea
 
-# Frontend artefacts — backend image doesn't need any of this
 frontend/node_modules
 frontend/dist
 frontend/.vite
 
-# Demo/test artefacts
 _demo_images
 make_test_docx.py
 Demo_MCQ_with_images.docx
-*.xml

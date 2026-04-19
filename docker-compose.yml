@@ -1,8 +1,6 @@
 services:
   backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    build: ./backend
     image: docx-moodle-backend:latest
     environment:
       DJANGO_DEBUG: "0"

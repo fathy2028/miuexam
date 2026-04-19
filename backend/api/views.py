@@ -7,19 +7,12 @@ GET  /api/health/    sanity check
 """
 import io
 import os
-import sys
-from pathlib import Path
 
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
-# Import the existing converter from the project root
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-if str(_PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(_PROJECT_ROOT))
-
-import docx_to_moodle_xml as converter  # noqa: E402
+from .converter import convert_stream
 
 
 @require_GET
@@ -44,14 +37,13 @@ def convert_docx(request):
             status=400,
         )
 
-    # Read fully into memory — docx files are small
     data = upload.read()
 
     try:
-        xml_text = converter.convert_stream(io.BytesIO(data))
+        xml_text = convert_stream(io.BytesIO(data))
     except ValueError as exc:
         return JsonResponse({"error": str(exc)}, status=422)
-    except Exception as exc:  # malformed docx, zipfile error, etc.
+    except Exception as exc:
         return JsonResponse(
             {"error": f"Conversion failed: {exc.__class__.__name__}: {exc}"},
             status=500,
