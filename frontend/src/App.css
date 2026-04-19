@@ -1,0 +1,96 @@
+.app {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.card {
+  width: 100%;
+  max-width: 560px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 14px;
+  padding: 32px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.card h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.card p.lead {
+  margin: 0 0 24px;
+  color: #9da7b3;
+  font-size: 14px;
+}
+
+.dropzone {
+  border: 2px dashed #30363d;
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 120ms, background 120ms;
+  background: #0d1117;
+}
+
+.dropzone.dragging {
+  border-color: #58a6ff;
+  background: rgba(88, 166, 255, 0.06);
+}
+
+.dropzone .picked {
+  color: #d2d7de;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.dropzone .hint {
+  color: #7d8590;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+button {
+  flex: 1;
+  border: 0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms, opacity 120ms;
+}
+
+button.primary {
+  background: #238636;
+  color: white;
+}
+button.primary:hover:not(:disabled) { background: #2ea043; }
+button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+button.secondary {
+  background: #21262d;
+  color: #c9d1d9;
+  border: 1px solid #30363d;
+}
+button.secondary:hover:not(:disabled) { background: #30363d; }
+
+.status {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+.status.info    { background: #0b2d4a; color: #9ecbff; }
+.status.success { background: #0f2e1a; color: #7ee787; }
+.status.error   { background: #3b1418; color: #ffa198; }
