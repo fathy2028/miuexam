@@ -393,15 +393,9 @@ def _parse_block(block: list[dict], index: int) -> dict | None:
             else:
                 body_parts.append(text)
 
-    if not {"A", "B", "C", "D"}.issubset(options.keys()):
-        return None
-
-    correct = _find_correct(options, answer_tag)
-    if correct is None:
-        return None
-
     first = block[0]
-    label = first["q_label"] if first["is_q_start"] else f"Q{index + 1}"
+    has_q_start = first["is_q_start"]
+    label = first["q_label"] if has_q_start else f"Q{index + 1}"
     n = re.search(r"\d+", label)
     q_num = int(n.group()) if n else index + 1
     if not re.match(r"^Q", label, re.IGNORECASE):
@@ -409,13 +403,32 @@ def _parse_block(block: list[dict], index: int) -> dict | None:
     else:
         label = label.upper()
 
+    body_text = re.sub(r"\s+", " ", " ".join(body_parts)).strip()
+
+    # Essay question: has a question label but no MCQ options
+    if not {"A", "B", "C", "D"}.issubset(options.keys()):
+        if not has_q_start or not body_text:
+            return None
+        return {
+            "type": "essay",
+            "num": q_num,
+            "label": label,
+            "text": body_text,
+            "images": images,
+        }
+
+    correct = _find_correct(options, answer_tag)
+    if correct is None:
+        return None
+
     expl = re.sub(r"\s+", " ", " ".join(expl_parts)).strip()
     expl = re.sub(r"^(?:Explanation:?|Because:?)\s*", "", expl, flags=re.IGNORECASE).strip()
 
     return {
+        "type": "multichoice",
         "num": q_num,
         "label": label,
-        "text": re.sub(r"\s+", " ", " ".join(body_parts)).strip(),
+        "text": body_text,
         "options": [options[l]["text"] for l in ("A", "B", "C", "D")],
         "correct_idx": ord(correct) - ord("A"),
         "explanation": expl,
@@ -511,39 +524,55 @@ def generate_xml(questions: list[dict], doc=None) -> str:
     ]
 
     for q in questions:
-        fb_correct = f"Correct! {q['explanation']}" if q["explanation"] else "Correct!"
-
         img_html, file_lines = _build_image_payload(q, doc)
+        q_type = q.get("type", "multichoice")
+
+        q_body = (
+            f"        <p>{q['text']}</p>"
+            + (f"\n        {img_html}" if img_html else "")
+        )
 
         lines += [
             f"  <!-- {q['label']} -->",
-            '  <question type="multichoice">',
+            f'  <question type="{q_type}">',
             "    <name>",
             f"      <text>{_xml_esc(_question_name(q))}</text>",
             "    </name>",
             '    <questiontext format="html">',
             "      <text><![CDATA[",
-            f"        <p>{q['text']}</p>"
-            + (f"\n        {img_html}" if img_html else ""),
+            q_body,
             "      ]]></text>",
             *file_lines,
             "    </questiontext>",
             "    <defaultgrade>1</defaultgrade>",
-            "    <shuffleanswers>0</shuffleanswers>",
-            "    <single>1</single>",
-            "    <answernumbering>ABCD</answernumbering>",
-            "",
         ]
 
-        for i, opt in enumerate(q["options"]):
-            fraction = 100 if i == q["correct_idx"] else 0
-            fb = _xml_esc(fb_correct) if fraction == 100 else ""
+        if q_type == "essay":
             lines += [
-                f'    <answer fraction="{fraction}">',
-                f"      <text>{_xml_esc(opt)}</text>",
-                f"      <feedback><text>{fb}</text></feedback>",
-                "    </answer>",
+                "    <responseformat>editor</responseformat>",
+                "    <responserequired>0</responserequired>",
+                "    <responsefieldlines>10</responsefieldlines>",
+                "    <attachments>0</attachments>",
+                "    <attachmentsrequired>0</attachmentsrequired>",
+                '    <graderinfo format="html"><text></text></graderinfo>',
             ]
+        else:
+            fb_correct = f"Correct! {q['explanation']}" if q["explanation"] else "Correct!"
+            lines += [
+                "    <shuffleanswers>0</shuffleanswers>",
+                "    <single>1</single>",
+                "    <answernumbering>ABCD</answernumbering>",
+                "",
+            ]
+            for i, opt in enumerate(q["options"]):
+                fraction = 100 if i == q["correct_idx"] else 0
+                fb = _xml_esc(fb_correct) if fraction == 100 else ""
+                lines += [
+                    f'    <answer fraction="{fraction}">',
+                    f"      <text>{_xml_esc(opt)}</text>",
+                    f"      <feedback><text>{fb}</text></feedback>",
+                    "    </answer>",
+                ]
 
         lines += ["  </question>", ""]
 
@@ -560,7 +589,9 @@ def convert_stream(docx_fileobj) -> str:
     questions = parse_questions(doc)
     if not questions:
         raise ValueError(
-            "No questions parsed. Make sure the file has MCQ options "
-            "A) B) C) D) and a highlighted / bold / 'Answer: X' marker."
+            "No questions parsed. For MCQ questions make sure the file has options "
+            "A) B) C) D) and a highlighted / bold / 'Answer: X' marker. "
+            "For essay questions make sure each question starts with a label (Q1, 1., etc.) "
+            "and contains body text but no A/B/C/D options."
         )
     return generate_xml(questions, doc)
