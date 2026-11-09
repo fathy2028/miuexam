@@ -75,3 +75,5 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024
 
 USE_TZ = True
+# Used for the timestamps in task reports.
+TIME_ZONE = os.environ.get("DJANGO_TIME_ZONE", "Africa/Cairo")

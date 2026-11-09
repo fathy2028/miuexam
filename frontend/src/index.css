@@ -1,11 +1,49 @@
 :root {
+  /* Red & white theme */
+  --red: #c8102e;
+  --red-hover: #a30d25;
+  --red-active: #8a0b1f;
+  --red-tint: #fdecee;
+  --red-tint-strong: #f9d3d9;
+
+  --bg: #f6f6f7;
+  --surface: #ffffff;
+  --surface-sunken: #fafafa;
+  --border: #e3e3e6;
+  --border-strong: #cfcfd4;
+
+  --text: #1d1d22;
+  --text-2: #4a4a55;
+  --text-muted: #73737f;
+
+  --ok-bg: #edf7ef;
+  --ok-fg: #1e6b34;
+  --warn-bg: #fff6e0;
+  --warn-fg: #8a5a00;
+  --err-bg: #fdecee;
+  --err-fg: #a30d25;
+  --info-bg: #f2f2f4;
+  --info-fg: #4a4a55;
+
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(16, 16, 20, 0.04), 0 8px 24px rgba(16, 16, 20, 0.06);
+
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   line-height: 1.5;
-  color-scheme: light dark;
-  color: #e8e8ea;
-  background: #0d1117;
+  color-scheme: light;
+  color: var(--text);
+  background: var(--bg);
 }
 
 * { box-sizing: border-box; }
-html, body, #root { height: 100%; margin: 0; }
-body { min-height: 100vh; }
+html, body, #root { min-height: 100%; margin: 0; }
+body { background: var(--bg); }
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  background: var(--red-tint);
+  color: var(--red-active);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
